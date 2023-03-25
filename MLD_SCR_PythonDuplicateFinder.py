@@ -2,6 +2,7 @@ from collections import namedtuple
 import os
 import hashlib
 import numpy as np
+import datetime
 
 # Function to calculate the hash value of a file
 def hash_file(filename):
@@ -12,7 +13,7 @@ def hash_file(filename):
     return hasher.hexdigest()
 
 # Set the path of the folder you want to scan
-folder_path = """e:\Zeus\_Milad\_MiladTestFurther\\"""
+folder_path = """e:\Zeus\Media\Music\\"""
 folder_path = folder_path.replace("\\","/")
 
 # Define a Set to store the hash and size of each file that has been checked
@@ -29,6 +30,7 @@ CheckedSize   = 0
 AddCount = 0
 RemCount = 0
 
+LastPrint = datetime.datetime.now()
 # Traverse through all the files in the folder
 for root, dirs, files in os.walk(folder_path):
     for file in files:
@@ -44,7 +46,7 @@ for root, dirs, files in os.walk(folder_path):
         CheckedSize += file_size
         if (file_hash, file_size) in [s for s in checked_files]:
             # If the file is a duplicate, delete it
-            os.remove(file_path)
+            # os.remove(file_path)
             SpaceReleased += file_size
             RemCount += 1
             print(f"\nDuplicate file removed: {file}\n, *** Released Data = {SpaceReleased/1.0e9:14.10f}, Checked size = {CheckedSize/1.0e9:7.3f}")
@@ -52,7 +54,11 @@ for root, dirs, files in os.walk(folder_path):
         else:
             # Define a namedtuple for a single structure
             checked_files.add(FileInfo)
-            if np.mod(AddCount,100) == 0:
+            
+            TimeSinceLastPrint = LastPrint - datetime.datetime.now()
+            
+            if np.mod(AddCount,100) == 0 or TimeSinceLastPrint.total_seconds() >= 10:
+                LastPrint = datetime.datetime.now()
                 print(f"\n*** RemCnt = {RemCount}, Released Data = {SpaceReleased/1.0e9:14.10f} GB, Checked size = {CheckedSize/1.0e9:7.3f} GB")
                 print(f"File added to set: {file}, total files count = {AddCount}")
 
